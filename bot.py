@@ -220,8 +220,12 @@ async def send_material(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # --- HANDLERS ---
 # Placeholder for AI reply (Gemini logic removed)
 async def ai_reply(text):
-    # Implement AI reply logic using an external service or API key from environment
-    return "[AI reply not implemented: Please connect to your AI service using env variables.]"
+    try:
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(text)
+        return response.text
+    except Exception as e:
+        return f"[AI error: {e}]"
 
 # Placeholder for MCQ quiz generation (Gemini logic removed)
 async def generate_mcq_questions():
