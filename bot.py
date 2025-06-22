@@ -218,7 +218,6 @@ async def send_material(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.application.create_task(auto_delete_message(context, msg.chat_id, msg.message_id))
 
 # --- HANDLERS ---
-# Placeholder for AI reply (Gemini logic removed)
 async def ai_reply(text):
     try:
         model = genai.GenerativeModel('gemini-pro')
