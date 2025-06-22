@@ -7,11 +7,11 @@ from telegram.ext import (
     ContextTypes, PollAnswerHandler
 )
 from datetime import datetime, timedelta
-import google.generativeai as genai
 import time
 from collections import defaultdict
 from dotenv import load_dotenv
 import asyncio
+import google.generativeai as genai
 
 # --- CONFIG ---
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
@@ -20,9 +20,12 @@ BANNED_WORDS_FILE = "banned_words.txt"
 WARNINGS_FILE = "warnings.json"
 # For local testing, you can set these in your terminal before running: 
 # set BOT_TOKEN=your-telegram-token
-# set GEMINI_API_KEY=your-gemini-key
 
-genai.configure(api_key=GEMINI_API_KEY)
+# Configure Gemini API from env variable
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+else:
+    raise ValueError("GEMINI_API_KEY environment variable not set!")
 
 # --- LOGGING ---
 logging.basicConfig(
@@ -215,35 +218,16 @@ async def send_material(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.application.create_task(auto_delete_message(context, msg.chat_id, msg.message_id))
 
 # --- HANDLERS ---
+# Placeholder for AI reply (Gemini logic removed)
 async def ai_reply(text):
-    for model_name in ["models/gemini-2.0-flash"]:
-        try:
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(text)
-            if hasattr(response, "text") and response.text:
-                return response.text
-            elif hasattr(response, "candidates") and response.candidates:
-                parts = response.candidates[0].content.parts
-                if parts and hasattr(parts[0], "text"):
-                    return parts[0].text
-        except Exception as e:
-            logger.error(f"Gemini error with {model_name}: {e}")
-    return "⚠️ SYSTEM ERROR: Gemini AI unavailable or quota exceeded."
+    # Implement AI reply logic using an external service or API key from environment
+    return "[AI reply not implemented: Please connect to your AI service using env variables.]"
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not is_allowed_group(update):
-        msg = await update.message.reply_text("❌ This bot is private and will now leave this group.")
-        context.application.create_task(auto_delete_message(context, msg.chat_id, msg.message_id))
-        await context.bot.leave_chat(update.effective_chat.id)
-        return
-    if update.effective_chat.type not in ["group", "supergroup"]:
-        msg = await update.message.reply_text("Add me to a group to use my features!")
-        context.application.create_task(auto_delete_message(context, msg.chat_id, msg.message_id))
-        return
-    msg = await update.message.reply_text(
-        "💻 SYSTEM ONLINE: HACKER bot at your service! Ask me anything..."
-    )
-    context.application.create_task(auto_delete_message(context, msg.chat_id, msg.message_id))
+# Placeholder for MCQ quiz generation (Gemini logic removed)
+async def generate_mcq_questions():
+    # Implement quiz question generation using an external service or API key from environment
+    # Return a list of dicts: [{"question": ..., "options": [...], "correct": ...}, ...]
+    return []
 
 user_message_times = defaultdict(list)  # user_id -> list of message timestamps
 SPAM_TIME_WINDOW = 10  # seconds
@@ -277,34 +261,6 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply = await ai_reply(user_message)
     msg = await update.message.reply_text(reply)
     context.application.create_task(auto_delete_message(context, msg.chat_id, msg.message_id))
-
-async def generate_mcq_questions():
-    prompt = (
-        "Generate 5 unique coding multiple choice questions (MCQ) for a quiz. "
-        "Each question should have 1 correct answer and 3 options. "
-        "Return ONLY a valid JSON array of objects, each with keys: question (string), options (list of 3 strings), correct (integer index of correct option, 0-based). "
-        "No explanation, no markdown, no text except the JSON. "
-        "Example: [{\"question\": \"What is 2+2?\", \"options\": [\"3\", \"4\", \"5\"], \"correct\": 1}]"
-    )
-    model = genai.GenerativeModel("models/gemini-2.0-flash")
-    response = model.generate_content(prompt)
-    import json, re
-    try:
-        # Extract JSON from response (in case AI adds extra text)
-        match = re.search(r'\\[.*\\]', response.text, re.DOTALL)
-        json_text = match.group(0) if match else response.text
-        questions = json.loads(json_text)
-        # Validate structure
-        if isinstance(questions, list) and all(
-            "question" in q and "options" in q and "correct" in q for q in questions
-        ):
-            return questions
-        else:
-            logger.error("AI MCQ: Invalid structure")
-            return []
-    except Exception as e:
-        logger.error(f"AI MCQ parse error: {e}")
-        return []
 
 user_scores = {}
 
@@ -409,6 +365,21 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "_Try it in your group!_"
     )
     msg = await update.message.reply_text(help_text, parse_mode="Markdown")
+    context.application.create_task(auto_delete_message(context, msg.chat_id, msg.message_id))
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not is_allowed_group(update):
+        msg = await update.message.reply_text("❌ This bot is private and will now leave this group.")
+        context.application.create_task(auto_delete_message(context, msg.chat_id, msg.message_id))
+        await context.bot.leave_chat(update.effective_chat.id)
+        return
+    if update.effective_chat.type not in ["group", "supergroup"]:
+        msg = await update.message.reply_text("Add me to a group to use my features!")
+        context.application.create_task(auto_delete_message(context, msg.chat_id, msg.message_id))
+        return
+    msg = await update.message.reply_text(
+        "💻 SYSTEM ONLINE: HACKER bot at your service! Ask me anything..."
+    )
     context.application.create_task(auto_delete_message(context, msg.chat_id, msg.message_id))
 
 # --- MAIN ---
