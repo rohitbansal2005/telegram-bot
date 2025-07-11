@@ -1,3 +1,4 @@
+![download](https://github.com/user-attachments/assets/69b7f3a3-bc9b-4bd7-9a60-fb7ca13bbd90)
 # Gemini Telegram AI Bot
 
 A Telegram bot powered by Google Gemini AI (Generative AI) that answers questions and chats with users. Works in both private chats and groups (when tagged). Like ChatGPT, but for Telegram!
