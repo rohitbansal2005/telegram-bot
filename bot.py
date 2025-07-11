@@ -31,7 +31,7 @@ async def ai_reply(text):
     if not GEMINI_API_KEY:
         return "AI not available: Gemini API key not set."
     try:
-        model = genai.GenerativeModel("gemini-pro")
+        model = genai.GenerativeModel("gemini-1.5-pro")
         response = await asyncio.to_thread(model.generate_content, text)
         if hasattr(response, "text") and response.text:
             return response.text
