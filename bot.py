@@ -74,7 +74,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "💬 *How to use:*\n- In a group: Tag me (@YourBotUsername) to get an answer.\n- In private chat: Just send your question!\n\nI'm like ChatGPT for Telegram."
+        "💬 *How to use:*\n- In a group: Tag me (@gembotai_bot) to get an answer.\n- In private chat: Just send your question!\n\nI'm like ChatGPT for Telegram."
     )
 
 # --- MAIN ---
@@ -84,7 +84,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), message_handler))
-    logger.info("Gemini AI Bot started. Waiting for events...")
+    logger.info("Gem AI Bot started. Waiting for events...")
     app.run_polling()
 
 if __name__ == "__main__":
